@@ -27,7 +27,15 @@ import {
   Typography,
 } from "@strapi/design-system";
 
-import { Plus, Text, Trash } from "@strapi/icons";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Plus,
+  Text,
+  Trash,
+} from "@strapi/icons";
 
 const DEFAULT_TABLE_CONTENT_ITEM_CELL = {
   id: 1,
@@ -67,35 +75,41 @@ function convertJSONToMarkdownTable(jsonData) {
 }
 
 function convertMarkdownToJSON(markdownTable) {
-  const lines = markdownTable.split('\n');
-  
+  const lines = markdownTable.split("\n");
+
   // Extract header row
-  const headerRow = lines[1].trim().split('|').map(cell => cell.trim());
-  
+  const headerRow = lines[1]
+    .trim()
+    .split("|")
+    .map((cell) => cell.trim());
+
   const jsonData = [];
-  
+
   // Iterate over data rows
   for (let i = 2; i < lines.length; i++) {
-    const rowCells = lines[i].trim().split('|').map(cell => cell.trim());
-    
+    const rowCells = lines[i]
+      .trim()
+      .split("|")
+      .map((cell) => cell.trim());
+
     // Skip empty lines and horizontal line
-    if (rowCells.length === 0 || rowCells[0].startsWith('-')) {
+    if (rowCells.length === 0 || rowCells[0].startsWith("-")) {
       continue;
     }
-    
+
     const student = { id: parseInt(rowCells[1]), cells: [] };
-    
+
     // Iterate over cells and create cell objects
     for (let j = 2; j < rowCells.length; j++) {
       student.cells.push({
         id: j - 1,
-        value: rowCells[j]
+        value: rowCells[j],
       });
     }
-    
+
     jsonData.push(student);
   }
-  
+
   return jsonData;
 }
 
@@ -175,6 +189,45 @@ const HomePage = () => {
     setTableContent(_tableContent);
   };
 
+  const moveColumn = ({ type, cellIndex }) => {
+    let nextIndex = null;
+
+    if (type == "LEFT") {
+      nextIndex = cellIndex - 1;
+    }
+    if (type == "RIGHT") {
+      nextIndex = cellIndex + 1;
+    }
+
+    let _tableContent = JSON.parse(JSON.stringify(tableContent));
+
+    _tableContent.map((row) => {
+      const tempCell = row.cells[cellIndex];
+      row.cells[cellIndex] = row.cells[nextIndex];
+      row.cells[nextIndex] = tempCell;
+    });
+
+    setTableContent(updateIndexes(_tableContent));
+  };
+
+  const moveRow = ({ type, rowIndex }) => {
+    let nextIndex = null;
+
+    if (type == "UP") {
+      nextIndex = rowIndex - 1;
+    }
+    if (type == "DOWN") {
+      nextIndex = rowIndex + 1;
+    }
+
+    let _tableContent = JSON.parse(JSON.stringify(tableContent));
+    const tempCell = _tableContent[rowIndex];
+    _tableContent[rowIndex] = _tableContent[nextIndex];
+    _tableContent[nextIndex] = tempCell;
+
+    setTableContent(updateIndexes(_tableContent));
+  };
+
   return (
     <Box>
       <Layout>
@@ -227,14 +280,42 @@ const HomePage = () => {
                                     icon={<Trash />}
                                   />
                                 </Box>
+                                <Box paddingRight={1}>
+                                  <IconButton
+                                    onClick={() => {
+                                      insertCellInEveryRow({
+                                        nextCellIndex: cellIndex + 1,
+                                      });
+                                    }}
+                                    label="Add Column"
+                                    icon={<Plus />}
+                                  />
+                                </Box>
+
+                                <Box paddingRight={1}>
+                                  <IconButton
+                                    disabled={cellIndex == 0}
+                                    onClick={() => {
+                                      moveColumn({
+                                        type: "LEFT",
+                                        cellIndex,
+                                      });
+                                    }}
+                                    label="Move Left"
+                                    icon={<ChevronLeft />}
+                                  />
+                                </Box>
+
                                 <IconButton
+                                  disabled={cellIndex == row.cells.length - 1}
                                   onClick={() => {
-                                    insertCellInEveryRow({
-                                      nextCellIndex: cellIndex + 1,
+                                    moveColumn({
+                                      type: "RIGHT",
+                                      cellIndex,
                                     });
                                   }}
-                                  label="Add Column"
-                                  icon={<Plus />}
+                                  label="Move Right"
+                                  icon={<ChevronRight />}
                                 />
                               </Flex>
                             </Box>
@@ -274,6 +355,35 @@ const HomePage = () => {
                           />
                         </Box>
                       </Flex>
+                      <Box marginTop={1}>
+                        <Flex>
+                          <Box paddingRight={1}>
+                            <IconButton
+                              disabled={rowIndex == 0}
+                              onClick={() => {
+                                moveRow({
+                                  type: "UP",
+                                  rowIndex,
+                                });
+                              }}
+                              label="Move Up"
+                              icon={<ChevronUp />}
+                            />
+                          </Box>
+
+                          <IconButton
+                            disabled={rowIndex == tableContent.length - 1}
+                            onClick={() => {
+                              moveRow({
+                                type: "DOWN",
+                                rowIndex,
+                              });
+                            }}
+                            label="Move Down"
+                            icon={<ChevronDown />}
+                          />
+                        </Flex>
+                      </Box>
                     </Td>
                   </Tr>
                 );
