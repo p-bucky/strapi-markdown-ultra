@@ -25,6 +25,10 @@ import {
   Flex,
   Initials,
   Typography,
+  ModalFooter,
+  ModalBody,
+  ModalLayout,
+  ModalHeader,
 } from "@strapi/design-system";
 
 import {
@@ -111,15 +115,18 @@ function convertMarkdownToJSON(markdownTable) {
     jsonData.push(student);
   }
 
+  console.log(jsonData);
   return jsonData;
 }
 
 const HomePage = () => {
   const [tableContent, setTableContent] = useState(DEFAULT_TABLE_CONTENT);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [tableMarkdown, setTableMarkdown] = useState("");
 
   useEffect(() => {
-    // console.log(tableContent);
-  }, [tableContent]);
+    console.log(tableMarkdown);
+  }, [tableMarkdown]);
 
   const updateIndexes = (tableItems) => {
     const _tableItems = tableItems.map((row, rowIndex) => {
@@ -234,6 +241,36 @@ const HomePage = () => {
       <Helmet>
         <title>Markdown Ultra</title>
       </Helmet>
+      {isModalVisible && (
+        <ModalLayout onClose={() => setIsModalVisible(false)}>
+          <ModalHeader>
+            <Typography
+              fontWeight="bold"
+              textColor="neutral800"
+              as="h2"
+              id="title"
+            >
+              Insert Table Markdown
+            </Typography>
+          </ModalHeader>
+          <ModalBody>
+            <Textarea
+              onChange={(event) => {
+                setTableMarkdown(event.target.value);
+              }}
+            ></Textarea>
+          </ModalBody>
+          <ModalFooter
+            endActions={
+              <>
+                <Button onClick={() => convertMarkdownToJSON(tableMarkdown)}>
+                  Populate
+                </Button>
+              </>
+            }
+          ></ModalFooter>
+        </ModalLayout>
+      )}
       <Box>
         <Layout>
           <HeaderLayout title="Markdown Table" as="h2" />
@@ -251,7 +288,7 @@ const HomePage = () => {
                 </Box>
                 <Button
                   onClick={() => {
-                    console.log(convertJSONToMarkdownTable(tableContent));
+                    setIsModalVisible(true);
                   }}
                 >
                   Insert
