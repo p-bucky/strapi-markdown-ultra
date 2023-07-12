@@ -36,6 +36,7 @@ import {
   Text,
   Trash,
 } from "@strapi/icons";
+import { Helmet } from "react-helmet";
 
 const DEFAULT_TABLE_CONTENT_ITEM_CELL = {
   id: 1,
@@ -229,170 +230,175 @@ const HomePage = () => {
   };
 
   return (
-    <Box>
-      <Layout>
-        <HeaderLayout title="Markdown Table" as="h2" />
-        <ContentLayout>
-          <Box paddingBottom={2}>
-            <Flex justifyContent={"end"}>
-              <Box paddingRight={2}>
+    <>
+      <Helmet>
+        <title>Markdown Ultra</title>
+      </Helmet>
+      <Box>
+        <Layout>
+          <HeaderLayout title="Markdown Table" as="h2" />
+          <ContentLayout>
+            <Box paddingBottom={2}>
+              <Flex justifyContent={"end"}>
+                <Box paddingRight={2}>
+                  <Button
+                    onClick={() => {
+                      console.log(convertJSONToMarkdownTable(tableContent));
+                    }}
+                  >
+                    Convert
+                  </Button>
+                </Box>
                 <Button
                   onClick={() => {
                     console.log(convertJSONToMarkdownTable(tableContent));
                   }}
                 >
-                  Convert
+                  Insert
                 </Button>
-              </Box>
-              <Button
-                onClick={() => {
-                  console.log(convertJSONToMarkdownTable(tableContent));
-                }}
-              >
-                Insert
-              </Button>
-            </Flex>
-          </Box>
-          <Table>
-            <Thead></Thead>
-            <Tbody>
-              {(tableContent || []).map((row, rowIndex) => {
-                return (
-                  <Tr key={row.id}>
-                    <Td>
-                      <Typography variant="sigma">{row.id}</Typography>
-                    </Td>
-                    {row.cells.map((cell, cellIndex) => {
-                      return (
-                        <Td key={`${cell.id}-${row.id}`}>
-                          {row.id == 1 && (
-                            <Box paddingBottom={2}>
-                              <Flex justifyContent={"end"}>
-                                <Box paddingRight={1}>
-                                  <IconButton
-                                    disabled={row.cells.length == 1}
-                                    onClick={() => {
-                                      removeCellInEveryRow({
-                                        cellId: cell.id,
-                                      });
-                                    }}
-                                    label="Remove Column"
-                                    icon={<Trash />}
-                                  />
-                                </Box>
-                                <Box paddingRight={1}>
-                                  <IconButton
-                                    onClick={() => {
-                                      insertCellInEveryRow({
-                                        nextCellIndex: cellIndex + 1,
-                                      });
-                                    }}
-                                    label="Add Column"
-                                    icon={<Plus />}
-                                  />
-                                </Box>
+              </Flex>
+            </Box>
+            <Table>
+              <Thead></Thead>
+              <Tbody>
+                {(tableContent || []).map((row, rowIndex) => {
+                  return (
+                    <Tr key={row.id}>
+                      <Td>
+                        <Typography variant="sigma">{row.id}</Typography>
+                      </Td>
+                      {row.cells.map((cell, cellIndex) => {
+                        return (
+                          <Td key={`${cell.id}-${row.id}`}>
+                            {row.id == 1 && (
+                              <Box paddingBottom={2}>
+                                <Flex justifyContent={"end"}>
+                                  <Box paddingRight={1}>
+                                    <IconButton
+                                      disabled={row.cells.length == 1}
+                                      onClick={() => {
+                                        removeCellInEveryRow({
+                                          cellId: cell.id,
+                                        });
+                                      }}
+                                      label="Remove Column"
+                                      icon={<Trash />}
+                                    />
+                                  </Box>
+                                  <Box paddingRight={1}>
+                                    <IconButton
+                                      onClick={() => {
+                                        insertCellInEveryRow({
+                                          nextCellIndex: cellIndex + 1,
+                                        });
+                                      }}
+                                      label="Add Column"
+                                      icon={<Plus />}
+                                    />
+                                  </Box>
 
-                                <Box paddingRight={1}>
+                                  <Box paddingRight={1}>
+                                    <IconButton
+                                      disabled={cellIndex == 0}
+                                      onClick={() => {
+                                        moveColumn({
+                                          type: "LEFT",
+                                          cellIndex,
+                                        });
+                                      }}
+                                      label="Move Left"
+                                      icon={<ChevronLeft />}
+                                    />
+                                  </Box>
+
                                   <IconButton
-                                    disabled={cellIndex == 0}
+                                    disabled={cellIndex == row.cells.length - 1}
                                     onClick={() => {
                                       moveColumn({
-                                        type: "LEFT",
+                                        type: "RIGHT",
                                         cellIndex,
                                       });
                                     }}
-                                    label="Move Left"
-                                    icon={<ChevronLeft />}
+                                    label="Move Right"
+                                    icon={<ChevronRight />}
                                   />
-                                </Box>
+                                </Flex>
+                              </Box>
+                            )}
+                            <Textarea
+                              onChange={(event) => {
+                                onChangeCellValue({
+                                  rowIndex,
+                                  cellIndex,
+                                  value: event.target.value,
+                                });
+                              }}
+                            >
+                              {cell.value}
+                            </Textarea>
+                          </Td>
+                        );
+                      })}
 
-                                <IconButton
-                                  disabled={cellIndex == row.cells.length - 1}
-                                  onClick={() => {
-                                    moveColumn({
-                                      type: "RIGHT",
-                                      cellIndex,
-                                    });
-                                  }}
-                                  label="Move Right"
-                                  icon={<ChevronRight />}
-                                />
-                              </Flex>
-                            </Box>
-                          )}
-                          <Textarea
-                            onChange={(event) => {
-                              onChangeCellValue({
-                                rowIndex,
-                                cellIndex,
-                                value: event.target.value,
-                              });
-                            }}
-                          >
-                            {cell.value}
-                          </Textarea>
-                        </Td>
-                      );
-                    })}
-
-                    <Td>
-                      <Flex>
-                        <IconButton
-                          onClick={() => {
-                            insertRow({ nextRowIndex: rowIndex + 1 });
-                          }}
-                          label="Add Row"
-                          icon={<Plus />}
-                        />
-                        <Box paddingLeft={1}>
-                          <IconButton
-                            disabled={tableContent.length == 1}
-                            onClick={() => {
-                              removeRow({ rowId: row.id });
-                            }}
-                            label="Remove Row"
-                            icon={<Trash />}
-                          />
-                        </Box>
-                      </Flex>
-                      <Box marginTop={1}>
+                      <Td>
                         <Flex>
-                          <Box paddingRight={1}>
+                          <IconButton
+                            onClick={() => {
+                              insertRow({ nextRowIndex: rowIndex + 1 });
+                            }}
+                            label="Add Row"
+                            icon={<Plus />}
+                          />
+                          <Box paddingLeft={1}>
                             <IconButton
-                              disabled={rowIndex == 0}
+                              disabled={tableContent.length == 1}
+                              onClick={() => {
+                                removeRow({ rowId: row.id });
+                              }}
+                              label="Remove Row"
+                              icon={<Trash />}
+                            />
+                          </Box>
+                        </Flex>
+                        <Box marginTop={1}>
+                          <Flex>
+                            <Box paddingRight={1}>
+                              <IconButton
+                                disabled={rowIndex == 0}
+                                onClick={() => {
+                                  moveRow({
+                                    type: "UP",
+                                    rowIndex,
+                                  });
+                                }}
+                                label="Move Up"
+                                icon={<ChevronUp />}
+                              />
+                            </Box>
+
+                            <IconButton
+                              disabled={rowIndex == tableContent.length - 1}
                               onClick={() => {
                                 moveRow({
-                                  type: "UP",
+                                  type: "DOWN",
                                   rowIndex,
                                 });
                               }}
-                              label="Move Up"
-                              icon={<ChevronUp />}
+                              label="Move Down"
+                              icon={<ChevronDown />}
                             />
-                          </Box>
-
-                          <IconButton
-                            disabled={rowIndex == tableContent.length - 1}
-                            onClick={() => {
-                              moveRow({
-                                type: "DOWN",
-                                rowIndex,
-                              });
-                            }}
-                            label="Move Down"
-                            icon={<ChevronDown />}
-                          />
-                        </Flex>
-                      </Box>
-                    </Td>
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </ContentLayout>
-      </Layout>
-    </Box>
+                          </Flex>
+                        </Box>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </ContentLayout>
+        </Layout>
+      </Box>
+    </>
   );
 };
 

@@ -6,7 +6,7 @@
     "name": "markdown-table",
     "description": "Description of Markdown Table plugin",
     "kind": "plugin",
-    "displayName": "Markdown Table"
+    "displayName": "Markdown Ultra"
   },
   "dependencies": {
     "@strapi/design-system": "^1.6.3",
